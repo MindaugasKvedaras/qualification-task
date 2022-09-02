@@ -59,25 +59,21 @@ export class Dropdown extends React.Component<MultiselectProps, any> {
     this.toggelOptionList = this.toggelOptionList.bind(this);
     this.onSelectItem = this.onSelectItem.bind(this);
     this.filterOptionsByInput = this.filterOptionsByInput.bind(this);
-    this.removeSelectedValuesFromOptions = this.removeSelectedValuesFromOptions.bind(this);
     this.isSelectedValue = this.isSelectedValue.bind(this);
     this.listenerCallback = this.listenerCallback.bind(this);
     this.onCloseOptionList = this.onCloseOptionList.bind(this);
   }
 
   initialSetValue() {
-    const { showCheckbox, groupBy, singleSelect } = this.props;
+    const { groupBy } = this.props;
 		const { options } = this.state;
-    if (!showCheckbox && !singleSelect) {
-      this.removeSelectedValuesFromOptions(false);
-		}
-	if (groupBy) {
-			this.groupByOptions(options);
-		}
-  }
+    if (groupBy) {
+        this.groupByOptions(options);
+      }
+    }
 
   componentDidMount() {
-	this.initialSetValue();
+	  this.initialSetValue();
     this.searchWrapper.current.addEventListener("click", this.listenerCallback);
   }
 
@@ -94,42 +90,6 @@ export class Dropdown extends React.Component<MultiselectProps, any> {
 
   listenerCallback() {
     this.searchBox.current.focus();
-  }
-
-  removeSelectedValuesFromOptions() {
-    const { isObject, displayValue, groupBy } = this.props;
-    const { selectedValues = [], unfilteredOptions, options } = this.state;
-    if (groupBy) {
-      this.groupByOptions(options);
-    }
-    if (!selectedValues.length) {
-      return;
-    }
-    if (isObject) {
-      let optionList = unfilteredOptions.filter(item => {
-        return selectedValues.findIndex(
-          v => v[displayValue] === item[displayValue]
-        ) === -1
-          ? true
-          : false;
-      });
-      if (groupBy) {
-        this.groupByOptions(optionList);
-      }
-      this.setState(
-        { options: optionList, filteredOptions: optionList },
-        this.filterOptionsByInput
-      );
-      return;
-    }
-    let optionList = unfilteredOptions.filter(
-      item => selectedValues.indexOf(item) === -1
-    );
-
-    this.setState(
-      { options: optionList, filteredOptions: optionList },
-      this.filterOptionsByInput
-    );
   }
 
   groupByOptions(options) {
@@ -200,27 +160,26 @@ export class Dropdown extends React.Component<MultiselectProps, any> {
   }
 
   onSelectItem(item) {
-    const { selectedValues } = this.state;
-    const { selectionLimit, onSelect, singleSelect, showCheckbox } = this.props;
+    const { selectedValues, showCheckbox } = this.state;
+    const { onSelect } = this.props;
     if (!this.state.keepSearchTerm){
       this.setState({
         inputValue: ''
       });
     }
-    if (singleSelect) {
-      this.onSingleSelect(item);
-      onSelect([item], item);
-      return;
-    }
     if (this.isSelectedValue(item)) {
       this.onRemoveSelectedItem(item);
       return;
     }
-    if (selectionLimit == selectedValues.length) {
-      return;
-    }
 		selectedValues.push(item);
 		onSelect(selectedValues, item);
+    this.setState({ selectedValues }, () => {
+      if (!showCheckbox) {
+				this.removeSelectedValuesFromOptions(true);
+      } else {
+        this.filterOptionsByInput();
+      }
+    });
     if (!this.props.closeOnSelect) {
       this.searchBox.current.focus();
     }
@@ -251,7 +210,7 @@ export class Dropdown extends React.Component<MultiselectProps, any> {
   }
 
   renderGroupByOptions() {
-    const { isObject = false, displayValue, showCheckbox, singleSelect } = this.props;
+    const { isObject = false, displayValue, showCheckbox } = this.props;
     const { groupedObject } = this.state;
     return Object.keys(groupedObject).map(obj => {
 			return (
@@ -264,7 +223,7 @@ export class Dropdown extends React.Component<MultiselectProps, any> {
                 key={`option${i}`}
                 onClick={() => this.onSelectItem(option)}
               >
-                {showCheckbox && !singleSelect && (
+                {showCheckbox && (
                     <CheckBox
                       type="checkbox"
                       readOnly
@@ -281,7 +240,7 @@ export class Dropdown extends React.Component<MultiselectProps, any> {
   }
 
   renderSelectedList() {
-    const { isObject = false, displayValue, singleSelect } = this.props;
+    const { isObject = false, displayValue } = this.props;
     const { selectedValues, closeIconType } = this.state;
     return selectedValues.map((value, index) => (
       <Chip key={index}>
@@ -297,14 +256,12 @@ export class Dropdown extends React.Component<MultiselectProps, any> {
   toggelOptionList() {
     this.setState({
       toggleOptionsList: !this.state.toggleOptionsList,
-      highlightOption: this.props.avoidHighlightFirstOption ? -1 : 0
     });
   }
 
   onCloseOptionList() {
     this.setState({
       toggleOptionsList: false,
-      highlightOption: this.props.avoidHighlightFirstOption ? -1 : 0,
       inputValue: ''
     });
   }
@@ -319,23 +276,21 @@ export class Dropdown extends React.Component<MultiselectProps, any> {
 
   renderMultiselectContainer() {
     const { inputValue, toggleOptionsList, selectedValues } = this.state;
-    const { placeholder, singleSelect } = this.props;
+    const { placeholder } = this.props;
     
     return (
       <MultiSelectContainer>
         <SearchWrapper
           ref={this.searchWrapper}
-          onClick={singleSelect ? this.toggelOptionList : () => {}}
         >
           {selectedValues && this.renderSelectedList()}
           <MultiSelectContainerInput
 			      type="text"
 			      ref={this.searchBox}
             onChange={this.onChange}
-            onKeyPress={this.onKeyPress}
             value={inputValue}
             onFocus={this.onFocus}
-            placeholder={((singleSelect && selectedValues.length)) ? '' : placeholder}
+            placeholder={placeholder}
             autoComplete="off"
           />
           {!toggleOptionsList ? (
@@ -377,17 +332,12 @@ Dropdown.defaultProps = {
   showCheckbox: true,
   placeholder: "Select",
 	groupBy: "",
-	style: {},
 	emptyRecordMsg: "No Options Available",
 	onSelect: () => {},
   onRemove: () => {},
+  removeSelectedValuesFromOptions: true,
   closeIcon: 'circle2',
-  singleSelect: false,
   closeOnSelect: true,
-  hidePlaceholder: false,
-  keepSearchTerm: false,
-  customCloseIcon: '',
-  className: '',
   selectedValueDecorator: v => v,
   optionValueDecorator: v => v
 } as MultiselectProps;
