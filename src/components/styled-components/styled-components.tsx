@@ -75,6 +75,7 @@ export const MultiSelectContainerInput = styled('input')`
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;600&display=swap');
     font-family: 'Poppins', sans-serif;
     border: none;
+    font-size: 18px;
     margin-top: 3px;
     width: 92%;
     @media (max-width: 768px) {
