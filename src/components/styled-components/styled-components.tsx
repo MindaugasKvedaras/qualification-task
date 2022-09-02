@@ -63,6 +63,7 @@ export const MultiSelectContainer = styled('div')`
 export const SearchWrapper = styled('div')`
     display: flex;
     align-items: center;
+    justify-content: center;
     border: 1px solid #696969;
     border-radius: 4px;
     padding: 8px;
@@ -75,7 +76,7 @@ export const MultiSelectContainerInput = styled('input')`
     font-family: 'Poppins', sans-serif;
     border: none;
     margin-top: 3px;
-    width: 95%;
+    width: 92%;
     @media (max-width: 768px) {
         width: 85%;
       }
@@ -93,6 +94,8 @@ export const OptionListContainer = styled('div')`
     z-index: 2;
 `
 export const Arrow = styled('div')`
+    padding-top: 5px;
+    font-size: 25px;
     &:hover {
         cursor: pointer;
     }
