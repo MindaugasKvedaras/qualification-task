@@ -48,8 +48,8 @@ export const Chip = styled('span')`
   white-space: nowrap;
 `
 export const CancelOptionImg = styled('img')`
-    height: 13px;
-    width: 13px;
+    height: 16px;
+    width: 16px;
     float: right;
     margin-left: 5px;
     cursor: pointer;
